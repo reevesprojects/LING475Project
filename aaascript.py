@@ -79,5 +79,6 @@ for filename in filenames:
     #compare the number of sentences to the number of svo marked sentences, should be mostly similar
     #if they aren't that means that the program isn't accounting for every everything that could be considered a "subject" or an "object"
     #this can probably be explained by sentences where there is exclusively o or exclusively v
+    #it is also possible that the root isn't a verb, which makes looking for dependant subjects, objects, and adverbs much harder
     print(countssvo)
     print(countsadv)
