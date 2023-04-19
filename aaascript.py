@@ -1,5 +1,6 @@
 import os
 import io
+import re
 def getsubj(sentence):
     for line in sentence.splitlines():#split the sentence into individual lines
         if ("nsubj" in line or "csubj" in line): #check if the line contains nsubj or csubj
@@ -39,8 +40,8 @@ for filename in filenames:
     with io.open(path_to_folder + "/" + filename, "r", encoding="utf-8") as file: #file wizardry ;)
         lines = file.read() #open file into variable 'lines'
 
+    lines = re.sub(r'^.*#.*\n?', '', lines, flags=re.MULTILINE) #remove all lines that start with #
     sentences = lines.split("\n\n") #split the file into segments based on if they have \n\n (blank line)
-    sentences = [sentence.split('\n', 2)[-1] for sentence in sentences] #gets rid of the first 2 lines, we don't need them
 
     #s = subject, v = verb, o = object, adva = adverb after verb, advb = adverb before verb
     countssvo = {"s":0, "v":0, "o":0, "sv":0, "vs":0, "so":0, "os":0, "sov":0, "osv":0, "ovs":0, "svo":0, "vso":0, "vos":0, "null":0}
