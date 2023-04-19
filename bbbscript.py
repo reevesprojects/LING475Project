@@ -20,7 +20,7 @@ rootverbpos = 127
 for filename in filenames:
     with open(path_to_folder + "/" + filename, "r", encoding="utf-8") as file: #file wizardry ;)
         output_filename = path_to_folder + "/" + "output_" + filename #make a new file for the output (we will run shell commands on it to get our data)
-        #output = open(output_filename, "w", encoding="utf-8")
+        output = open(output_filename, "w", encoding="utf-8")
         sentence_generator = parse_incr(file) #parse the file using conllu library
 
         for sentence in sentence_generator: #sentence_generator is just a more efficient version of having all the strings in a single array
@@ -63,9 +63,10 @@ for filename in filenames:
                     advfound=True
             if apoorlynamedstring == '': 
                 apoorlynamedstring = "null"
-            if apoorlynamedstring == 'v':
-                for token in sentence:
-                    print(token['id'], token['form'], token['lemma'], token['upos'], token['xpos'], token['feats'], token['head'], token['deprel'], token['deps'], token['misc'])
-            #output.write(apoorlynamedstring + "\n")
+            #uncomment below and replace 'v' with any other letter to see why you may only be getting that letter (underrepresentation)
+            #if apoorlynamedstring == 'v':
+            #    for token in sentence:
+            #        print(token['id'], token['form'], token['lemma'], token['upos'], token['xpos'], token['feats'], token['head'], token['deprel'], token['deps'], token['misc'])
+            output.write(apoorlynamedstring + "\n")
         
-        #output.close()
+        output.close()
