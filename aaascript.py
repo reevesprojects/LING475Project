@@ -1,9 +1,8 @@
 import os
 import io
 import re
-
 def getsubj(sentence):
-    for line in sentence:#split the sentence into individual lines
+    for line in sentence.splitlines():#split the sentence into individual lines
         if ("nsubj" in line or "csubj" in line): #check if the line contains nsubj or csubj
             return int(line.split('\t')[0]) #if it does return the line number as an integer
     return 0 #there are no lines found with a subject in them, return 0
@@ -20,7 +19,7 @@ def getrootverb(sentence):
         if ("VERB" in line and "root" in line):
             rootverbposition = int(line.split('\t')[0])
     for line in sentence.splitlines():
-        #if the aux verb is dependent on the root verb and comes before the root verb
+        #if the aux verb is dependant on the root verb and comes before the root verb
         if ("aux" in line and rootverbposition < int(line.split('\t')[0]) and rootverbposition == int(line.split('\t')[6])):
             return int(line.split('\t')[0])
     return rootverbposition
@@ -43,8 +42,6 @@ for filename in filenames:
 
     lines = re.sub(r'^.*#.*\n?', '', lines, flags=re.MULTILINE) #remove all lines that start with #
     sentences = lines.split("\n\n") #split the file into segments based on if they have \n\n (blank line)
-    for sentence in sentences: #run through all the sentences
-        sentence = sentence.strip() #get rid of any blank lines (there shouldn't be any but UD can be weird)
 
     #s = subject, v = verb, o = object, adva = adverb after verb, advb = adverb before verb
     countssvo = {"s":0, "v":0, "o":0, "sv":0, "vs":0, "so":0, "os":0, "sov":0, "osv":0, "ovs":0, "svo":0, "vso":0, "vos":0, "null":0}
