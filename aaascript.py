@@ -13,10 +13,15 @@ def getobj(sentence):
     return 0
 
 def getrootverb(sentence):
-    for line in sentence.splitlines(): #same process as getsubj but looks for "VERB" and "root" instead
+    rootverbposition = 0
+    for line in sentence.splitlines():
         if ("VERB" in line and "root" in line):
+            rootverbposition = int(line.split('\t')[0])
+    for line in sentence.splitlines():
+        #if the aux verb is dependant on the root verb and comes before the root verb
+        if ("aux" in line and rootverbposition < int(line.split('\t')[0]) and rootverbposition == int(line.split('\t')[6])):
             return int(line.split('\t')[0])
-    return 0
+    return rootverbposition
 
 def getadv(sentence="", rootval=0):
     for line in sentence.splitlines(): #same process as getsubj but looks for "adv" instead
@@ -27,11 +32,11 @@ def getadv(sentence="", rootval=0):
 
 
 #The Meat And/Or Potatoes
-path_to_folder = "D:\PythonStuff\datafiles" #the folder where we keep our files
+path_to_folder = "/home/reevesbenjamind/LING475/LING475Project/datafiles" #the folder where we keep our files
 filenames = os.listdir(path_to_folder) #making a list of all the files in the folder
 
 for filename in filenames:
-    with io.open(path_to_folder + "\\" + filename, "r", encoding="utf-8") as file: #file wizardry ;)
+    with io.open(path_to_folder + "/" + filename, "r", encoding="utf-8") as file: #file wizardry ;)
         lines = file.read() #open file into variable 'lines'
 
     sentences = lines.split("\n\n") #split the file into segments based on if they have \n\n (blank line)
@@ -54,7 +59,9 @@ for filename in filenames:
             countssvo["null"]+=1 #sentences that don't have a subject, object, or verb
             #uncomment the next sentence to print out the sentences that are null (most of them make sense as to why they are null)
             #print(sentence)
-        if (s and not o and not v): countssvo["s"]+=1 #we count every time ONLY the subject is found
+        if (s and not o and not v): 
+            countssvo["s"]+=1 #we count every time ONLY the subject is found
+            #print(sentence)
         if (not s and o and not v): countssvo["o"]+=1
         if (not s and not o and v): countssvo["v"]+=1
         if (s and v and not o and s < v): countssvo["sv"]+=1 #every time there is ONLY a subject and verb IN THIS ORDER
@@ -63,7 +70,9 @@ for filename in filenames:
         if (s and o and not v and o < s): countssvo["os"]+=1
         #I know the if statements are kind of hard to read but I blame python for that
         #each one checks to see if there is a subject, an object, and a verb, and then checks their position
-        if (s and v and o and s<o and o<v): countssvo["sov"]+=1
+        if (s and v and o and s<o and o<v): 
+            countssvo["sov"]+=1
+            #print(sentence)
         if (s and v and o and s<v and v<o): countssvo["svo"]+=1
         if (s and v and o and o<s and s<v): countssvo["osv"]+=1
         if (s and v and o and o<v and v<s): countssvo["ovs"]+=1
