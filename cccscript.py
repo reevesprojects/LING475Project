@@ -1,6 +1,5 @@
 import os
 from conllu import parse_incr
-from conllu.models import TokenList
 
 def findRootVerb(sentence):
     for token in sentence:
@@ -23,13 +22,12 @@ vfound=False
 ofound=False
 rootpos=127
 rootverbpos = 127
+countssvo = {"sv":0, "vs":0, "so":0, "os":0, "ov":0, "vo":0, "sov":0, "osv":0, "ovs":0, "svo":0, "vso":0, "vos":0}
+
 for filename in filenames:
     if not filename.startswith("output_"):
 
         with open(path_to_folder + "/" + filename, "r", encoding="utf-8") as file: #file wizardry ;)
-            output_filename = path_to_folder + "/" + "output_" + filename #make a new file for the output (we will run shell commands on it to get our data
-            output = open(output_filename, "w", encoding="utf-8")
-
             try:
                 sentence_generator = parse_incr(file) #parse the file using conllu library, this just breaks it into sentences and tokens we can use
             except:
@@ -70,11 +68,17 @@ for filename in filenames:
                         apoorlynamedstring += "v"
                         vfound = True
 
-                if len(apoorlynamedstring) >= 2: 
-                    output.write(apoorlynamedstring + "\n")
-                #uncomment below and replace 'v' with any other letter to see why you may only be getting that letter (underrepresentation)
-                #if apoorlynamedstring.startswith("v"):
-                #    for token in sentence:
-                #        print(token['id'], token['form'], token['lemma'], token['upos'], token['xpos'], token['feats'], token['head'], token['deprel'], token['deps'], token['misc'])
-            print(filename)
-            output.close()
+                if apoorlynamedstring == "svo":countssvo["svo"]+=1
+                if apoorlynamedstring == "sov":countssvo["sov"]+=1
+                if apoorlynamedstring == "vos":countssvo["vos"]+=1
+                if apoorlynamedstring == "vso":countssvo["vso"]+=1
+                if apoorlynamedstring == "osv":countssvo["osv"]+=1
+                if apoorlynamedstring == "ovs":countssvo["ovs"]+=1
+                if apoorlynamedstring == "sv":countssvo["sv"]+=1
+                if apoorlynamedstring == "vs":countssvo["vs"]+=1
+                if apoorlynamedstring == "os":countssvo["os"]+=1
+                if apoorlynamedstring == "so":countssvo["so"]+=1
+                if apoorlynamedstring == "vo":countssvo["vo"]+=1
+                if apoorlynamedstring == "ov":countssvo["ov"]+=1
+
+            print(filename + "\t" + str(countssvo["svo"])+ "\t" + str(countssvo["sov"])+ "\t" + str(countssvo["vso"])+ "\t" + str(countssvo["vos"])+ "\t" + str(countssvo["osv"])+ "\t" + str(countssvo["ovs"])+ "\t" + str(countssvo["sv"])+ "\t" + str(countssvo["vs"])+ "\t" + str(countssvo["os"])+ "\t" + str(countssvo["so"])+ "\t" + str(countssvo["vo"])+ "\t" + str(countssvo["ov"]))
