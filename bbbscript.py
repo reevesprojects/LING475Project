@@ -1,25 +1,12 @@
 import os
 from conllu import parse_incr
-from conllu.models import TokenList
-
-def findRootVerb(sentence):
-    for token in sentence:
-        if 'root' in token['deprel'] and token['upos'] == 'VERB':
-            return token['id']
-    return 127 #arbitrarily high number
 
 def findRoot(sentence):
     for token in sentence:
         if 'root' in token['deprel']:
-            return token['id']
-    return 127 #arbitrarily high number
+            return token
+    return -1
 
-
-def findSubVerb(sentence, srootval):
-    for token in sentence:
-        if 'VERB' in token['upos'] and token['id'] == srootval:
-            return token['id']
-    return 127
            
 path_to_folder = "/home/reevesbenjamind/LING475/LING475Project/datafiles" #the folder where we keep our files
 filenames = os.listdir(path_to_folder) #making a list of all the files in the folder
@@ -50,12 +37,7 @@ for filename in filenames:
                 sofound=False
                 sadvfound=False
                 inSCONJ=False
-                srootpos=127
-                srootverbpos=127
-                rootverbpos = 127
-                rootpos = 127
-                rootverbpos = findRootVerb(sentence) #get the line number of the root verb
-                rootpos = findRoot(sentence)
+                roottoken = findRoot(sentence)
 
                 for token in sentence: #each of the if statements have a _found variable so that they aren't repeated
                     #this has the downside of only allowing one per sentence, which may not be the case for things like adverbs
@@ -64,60 +46,54 @@ for filename in filenames:
                     #because the tokens are ran through one at a time, the letters in the string should come in the same order as the sentence
                     #the string is then put into the file, one per sentence
                     if not inSCONJ:
-                        if 'nsubj' in token['deprel'] and rootpos == token['head'] and not sfound:
+                        if 'nsubj' in token['deprel'] and roottoken['id'] == token['head'] and not sfound:
                             apoorlynamedstring += "s"
                             sfound = True
-                        elif 'csubj' in token['deprel'] and rootpos == token['head'] and not sfound:
+                        elif 'csubj' in token['deprel'] and roottoken['id'] == token['head'] and not sfound:
                             apoorlynamedstring += "s"
                             sfound = True
-                        elif 'root' in token['deprel'] and token['upos'] == 'NOUN' and not sfound:
-                            apoorlynamedstring += "s"
-                            sfound = True
-                        elif 'root' in token['deprel'] and token['upos'] == 'PROPN' and not sfound:
-                            apoorlynamedstring += "s"
-                            sfound = True
-                        elif 'aux' in token['deprel'] and token['id'] < rootverbpos and token['head'] == rootverbpos and not vfound:
+                        elif 'aux' in token['deprel'] and 'VERB' in roottoken['upos'] and token['head'] == roottoken['id'] and not vfound:
                             apoorlynamedstring += "v"
                             vfound = True
-                        elif 'obj' in token['deprel'] and token['head'] == rootpos and not ofound:
+                        elif 'obj' in token['deprel'] and token['head'] == roottoken['upos'] and not ofound:
                             apoorlynamedstring += "o"
                             ofound = True
-                        elif token['id'] == rootverbpos and not vfound:
+                        # if copular and AUX and the token's head is a noun and the token's head noun's head is the root
+                        elif 'cop' in token['deprel'] and 'AUX' in token['upos'] and 'NOUN' in sentence[token['head']-1]['upos'] and sentence[sentence[token['head']-1]['head']] == roottoken and not vfound:
+                            apoorlynamedstring += "v"
+                            vfound=True
+                        elif token == roottoken and 'VERB' in roottoken['upos'] and not vfound:
                             apoorlynamedstring += "v"
                             vfound = True
-                        elif 'advmod' in token['deprel'] and token['head'] == rootverbpos and not advfound:
+                        elif 'advmod' in token['deprel'] and sentence[token['head']-1] == roottoken and not advfound:
                             apoorlynamedstring += "a"
                             advfound=True
-                            if (token["id"] < rootverbpos): advbcount+=1
+                            if (token["id"] < roottoken['id']): advbcount+=1
                             else: advacount+=1
                         elif 'SCONJ' in token["upos"] and not inSCONJ: #we are marking subordinarting qlauses as 'q' for qlause
                             #apoorlynamedstring += "q" 
-                            srootpos=token['head']
-                            srootverbpos= findSubVerb(sentence, srootpos)
+                            sroottoken=sentence[token['head']-1]
                             inSCONJ=True
                     else: #this runs if we are in a subordinating clause
-                        if 'nsubj' in token['deprel'] and srootpos == token['head'] and not ssfound:
+                        if 'nsubj' in token['deprel'] and sroottoken == sentence[token['head']-1] and not ssfound:
                             anotherstring+="s"
                             ssfound = True
-                        elif 'csubj' in token['deprel'] and srootpos == token['head'] and not ssfound:
+                        elif 'csubj' in token['deprel'] and sroottoken == sentence[token['head']-1] and not ssfound:
                             anotherstring += "s"
                             ssfound = True
-                        elif srootpos == token['id'] and token['upos'] == 'NOUN' and not ssfound:
-                            anotherstring += "s"
-                            ssfound = True
-                        elif srootpos == token['id'] and token['upos'] == 'PROPN' and not ssfound:
-                            anotherstring += "s"
-                            ssfound = True
-                        elif 'aux' in token['deprel'] and token['id'] < srootverbpos and token['head'] == srootverbpos and not svfound:
+                        elif 'aux' in token['deprel'] and sroottoken == sentence[token['head']-1] and 'VERB' in sentence[token['head']-1]['upos'] and not svfound:
                             anotherstring += "v"
                             svfound = True
-                        elif 'obj' in token['deprel'] and token['head'] == srootpos and not sofound:
+                        elif 'cop' in token['deprel'] and 'AUX' in token['upos'] and 'NOUN' in sentence[token['head']-1]['upos'] and sentence[sentence[token['head']-1]['head']] == sroottoken and not vfound:
+                            apoorlynamedstring += "v"
+                            vfound=True
+                        elif 'obj' in token['deprel'] and sroottoken == sentence[token['head']-1] and not sofound:
                             anotherstring += "o"
                             sofound = True
-                        elif token['id'] == srootverbpos and not svfound:
+                        elif token == sroottoken and 'VERB' in token['upos'] and not svfound:
                             anotherstring += "v"
                             svfound = True
-                        elif 'advmod' in token['deprel'] and token['head'] == srootverbpos and not sadvfound:
+                        elif 'advmod' in token['deprel'] and sroottoken == sentence[token['head']-1] and 'VERB' in sentence[token['head']-1]['upos'] and not sadvfound:
                             anotherstring += "a"
                             sadvfound=True
                         if '.' in token['lemma'] or ',' in token['lemma'] or ';' in token['lemma'] or '!' in token['lemma'] or '?' in token['lemma']:
@@ -127,10 +103,8 @@ for filename in filenames:
                             sofound=False
                             sadvfound=False
                             inSCONJ=False
-                            srootpos=127
-                            srootverbpos=127
                             if anotherstring=="":
-                                anotherstring=="null"
+                                anotherstring="null"
                             sub.write(anotherstring+"\n")
                             anotherstring=""
 
